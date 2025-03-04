@@ -1,0 +1,39 @@
+# action.yml
+name: 'Pull request bot checker for educational process'
+description: 'Check view of pr, such as: name of pr, commits, structure, files and so on'
+inputs:
+  number-of-pr:  
+    description: 'Number of pull request'
+    required: true
+    default: '1'
+  github-token:  
+    description: 'Github token'
+    required: true
+    default: "${{ github.token }}"
+  repository-name:
+    description: 'Full name of repo. Format.: <owner>/<name of repo>'
+    required: true
+    default: ${{ github.event.repository.full_name }}
+
+branding:
+  icon: 'book'  
+  color: 'gray-dark'
+
+runs:
+  using: 'composite'
+  steps:
+      - run: |
+          PAYLOAD='{
+            "command": "check_pr",
+            "arguments": {
+              "repository_name": "${{ inputs.repository-name }}",
+              "github_token": "${{ inputs.github-token }}",
+              "number_of_pr": "${{ inputs.number-of-pr }}"
+            }
+          }'
+          curl -X 'POST' --fail-with-body \
+            "$SERVER_URL/run_command/" \
+            -H 'accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -d "$PAYLOAD"
+        shell: bash
